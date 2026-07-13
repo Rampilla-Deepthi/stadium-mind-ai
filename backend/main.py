@@ -1,8 +1,15 @@
+from dotenv import load_dotenv
+import google.generativeai as genai
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+load_dotenv(dotenv_path=".env")
+print("API KEY:", os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key="AQ.Ab8RN6JjOvF6og4lDq_dptvbq1P2Eek6_dC2QmfqqiEyF7TZ4A")
+model = genai.GenerativeModel("gemini-3.5-flash")
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,23 +29,30 @@ def home():
 @app.post("/chat")
 def chat(request: ChatRequest):
 
-    message = request.message.lower()
+    try:
+        response = model.generate_content(
+            f"""
+            You are StadiumMind AI.
 
-    if "gate" in message:
-        response = "Gate B is 120 meters east of your current location."
+            User Question:
+            {request.message}
+            """
+        )
 
-    elif "food" in message:
-        response = "Food Plaza A is near Section 102."
+        print("GEMINI RESPONSE:", response.text)
 
-    elif "crowd" in message:
-        response = "Crowd density is moderate. Gate C is less crowded."
+        return {
+            "response": response.text
+        }
 
-    elif "match" in message:
-        response = "Argentina vs Brazil starts at 7:00 PM."
+    except Exception as e:
+        error = str(e)
 
-    else:
-        response = "I can help with navigation, food, crowd status, and match information."
+        if "429" in error:
+            return {
+                "response": "Gemini is temporarily rate-limited. Please wait a minute and try again."
+                }
 
-    return {
-        "response": response
-    }
+        return {
+        "response": f"Error: {error}"
+        }
