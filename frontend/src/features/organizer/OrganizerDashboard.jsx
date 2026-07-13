@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   ShieldAlert, 
   Zap, 
@@ -11,15 +11,38 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+
 const OrganizerDashboard = () => {
   // Realistic FIFA 2026 Operational Data
+  const [operationStatus, setOperationStatus] = useState(
+  'Awaiting AI decision'
+);
+const [alerts, setAlerts] = useState([
+  { type: 'Medical', loc: 'Sec 104', time: '2m ago', active: true },
+  { type: 'Security', loc: 'Gate C', time: '14m ago', active: false },
+  { type: 'Maintenance', loc: 'Concourse B', time: '18m ago', active: false },
+  { type: 'System', loc: 'API-Relay', time: '25m ago', active: false },
+]);
   const sectorData = [
     { name: 'North Stand', occupancy: '94%', status: 'Critical', color: 'text-rose-500' },
     { name: 'South Stand', occupancy: '82%', status: 'Stable', color: 'text-emerald-500' },
     { name: 'East VIP', occupancy: '65%', status: 'Normal', color: 'text-indigo-500' },
     { name: 'West Press', occupancy: '88%', status: 'Warning', color: 'text-amber-500' },
   ];
-
+const handleRedirect = () => {
+  setOperationStatus(
+    '✅ Redirect executed. Additional staff deployed to Sector 2. Estimated congestion reduction: 68%.'
+  );
+};
+const acknowledgeAlert = (index) => {
+  setAlerts(prev =>
+    prev.map((alert, i) =>
+      i === index
+        ? { ...alert, active: false }
+        : alert
+    )
+  );
+};
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       
@@ -102,12 +125,20 @@ const OrganizerDashboard = () => {
                   redirect spectators through Gate D to balance throughput."
                 </p>
                 <div className="mt-6 flex gap-3">
-                  <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase transition-all">
+                  <button
+  onClick={handleRedirect}
+  className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase transition-all"
+>
                     Execute Redirect
                   </button>
                   <button className="bg-slate-800 text-slate-400 px-5 py-2.5 rounded-xl text-xs font-black uppercase">
                     Ignore
                   </button>
+                  <div className="mt-4 bg-slate-900 p-3 rounded-xl">
+  <p className="text-xs text-emerald-400 font-bold">
+    {operationStatus}
+  </p>
+</div>
                 </div>
               </div>
               <Zap className="absolute right-[-10px] bottom-[-10px] text-white/5" size={150} />
@@ -144,12 +175,7 @@ const OrganizerDashboard = () => {
             </h2>
           </div>
           <div className="p-4 space-y-3 overflow-y-auto max-h-[500px]">
-            {[
-              { type: 'Medical', loc: 'Sec 104', time: '2m ago', active: true },
-              { type: 'Security', loc: 'Gate C', time: '14m ago', active: false },
-              { type: 'Maintenance', loc: 'Concourse B', time: '18m ago', active: false },
-              { type: 'System', loc: 'API-Relay', time: '25m ago', active: false },
-            ].map((alert, i) => (
+            {alerts.map((alert, i) =>  (
               <div key={i} className={`p-4 rounded-2xl border transition-all cursor-pointer ${alert.active ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}`}>
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
@@ -166,9 +192,12 @@ const OrganizerDashboard = () => {
                 </div>
                 <p className="text-sm font-bold text-slate-900 mt-2">{alert.loc} Requesting Support</p>
                 {alert.active && (
-                  <button className="mt-3 w-full py-2 bg-rose-600 text-white text-[10px] font-black uppercase rounded-lg">
-                    Acknowledge
-                  </button>
+                  <button
+  onClick={() => acknowledgeAlert(i)}
+  className="mt-3 w-full py-2 bg-rose-600 text-white text-[10px] font-black uppercase rounded-lg"
+>
+  Acknowledge
+</button>
                 )}
               </div>
             ))}
