@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-
+# Gemini integration active
 app = FastAPI()
 load_dotenv(dotenv_path=".env")
 print("API KEY:", os.getenv("GEMINI_API_KEY"))
