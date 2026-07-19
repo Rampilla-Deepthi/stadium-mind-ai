@@ -1,15 +1,8 @@
-from dotenv import load_dotenv
-from google import genai
-import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 # Gemini integration active
 app = FastAPI()
-load_dotenv(dotenv_path=".env")
-print("KEY LENGTH:", len(os.getenv("GEMINI_API_KEY", "")))
-print("KEY PREFIX:", os.getenv("GEMINI_API_KEY", "")[:5])
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,32 +22,24 @@ def home():
 @app.post("/chat")
 def chat(request: ChatRequest):
 
-    try:
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=f"""
-            You are StadiumMind AI.
+    msg = request.message.lower()
 
-            User Question:
-            {request.message}
-            """
-        )
+    if "food" in msg:
+        response = "Nearest food court is near Gate B."
 
-        return {
-            "response": response.text
-        }
+    elif "gate" in msg or "navigation" in msg:
+        response = "Use the West Corridor for the fastest route."
 
-    except Exception as e:
-        error = str(e)
+    elif "crowd" in msg:
+        response = "Current crowd density is moderate."
 
-        if "429" in error:
-            return {
-                "response": "Gemini is temporarily rate-limited. Please wait a minute and try again."
-            }
+    elif "match" in msg:
+        response = "Next match starts at 7:00 PM."
 
-        return {
-            "response": f"Error: {error}"
-        }
+    else:
+        response = "Welcome to StadiumMind AI. Ask about navigation, food, crowd status, or matches."
+
+    return {"response": response}
 @app.get("/crowd-status")
 def crowd_status():
     return {
