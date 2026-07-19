@@ -1,16 +1,68 @@
-# React + Vite
+# StadiumMind AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+AI-powered stadium operations platform for FIFA World Cup 2026.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+StadiumMind AI helps fans and organizers manage stadium experiences through intelligent navigation, crowd monitoring, AI assistance, and real-time operational insights.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Fan Dashboard
+- Smart Navigation
+- Crowd Density Monitoring
+- AI Stadium Assistant
+- Interactive Stadium Map
+- Nearby Amenities
 
-## Expanding the Oxlint configuration
+### Organizer Dashboard
+- Crowd Monitoring
+- Live Alert Management
+- AI Recommendations
+- Attendance Tracking
+- Security Status Monitoring
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Tech Stack
+
+### Frontend
+- React
+- Vite
+- Tailwind CSS
+
+### Backend
+- FastAPI
+- Python
+
+## Run Locally
+
+### Backend
+
+```bash
+cd backend
+venv\Scripts\activate
+uvicorn main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Project Structure
+
+```text
+frontend/
+backend/
+README.md
+```
+
+## Use Case
+
+Designed for large-scale sporting events such as the FIFA World Cup 2026 to improve fan experience, navigation, crowd safety, and stadium operations.
+
+## Team
+
+Built for the GenAI APAC Hackathon.
