@@ -9,7 +9,7 @@ app = FastAPI()
 load_dotenv(dotenv_path=".env")
 print("KEY LENGTH:", len(os.getenv("GEMINI_API_KEY", "")))
 print("KEY PREFIX:", os.getenv("GEMINI_API_KEY", "")[:5])
-client = genai.Client(api_key="AQ.Ab8RN6JjOvF6og4lDq_dptvbq1P2Eek6_dC2QmfqqiEyF7TZ4A")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,3 +55,28 @@ def chat(request: ChatRequest):
         return {
             "response": f"Error: {error}"
         }
+@app.get("/crowd-status")
+def crowd_status():
+    return {
+        "north_stand": "94%",
+        "south_stand": "82%",
+        "east_vip": "65%",
+        "west_press": "88%"
+    }
+
+
+@app.get("/alerts")
+def alerts():
+    return {
+        "alert": "High congestion detected at Gate B",
+        "severity": "High"
+    }
+
+
+@app.get("/navigation")
+def navigation():
+    return {
+        "route": "Gate B → Gate D → Section 105",
+        "time": "3 mins",
+        "recommendation": "Use Gate D to avoid crowd congestion."
+    }

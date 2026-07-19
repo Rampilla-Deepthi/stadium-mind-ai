@@ -33,7 +33,7 @@ useEffect(() => {
   });
 }, [chatMessages]);
 
-const handleSend =async () => {
+const handleSend = () => {
   if (!message.trim()) return;
 
   const userMessage = {
@@ -43,76 +43,131 @@ const handleSend =async () => {
 
   let response = '';
 
-try {
-  console.log("Sending request");
-
-  const res = await fetch('http://127.0.0.1:8000/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: message
-    })
-  });
-
-  console.log("Response received", res);
-
-  const data = await res.json();
-
-  console.log("Data:", data);
-
-  response = data.response;
-
-} catch (error) {
-  console.error(error);
-  response = 'Unable to connect to StadiumMind AI backend.';
-}
-setChatMessages([
-  ...chatMessages,
-  userMessage,
-  {
-    sender: 'ai',
-    text: 'Thinking...'
+  if (message.toLowerCase().includes('gate')) {
+    response =
+      'Gate B is 120 meters east of your current location. Estimated walking time: 2 minutes.';
   }
-]);
+  else if (message.toLowerCase().includes('food')) {
+    response =
+      'The nearest food court is Food Plaza A near Section 102.';
+  }
+  else if (message.toLowerCase().includes('crowd')) {
+    response =
+      'Current crowd density is moderate. Gate C is less crowded.';
+  }
+  else if (
+    message.toLowerCase().includes('match') ||
+    message.toLowerCase().includes('game')
+  ) {
+    response =
+      'Today: Argentina vs Brazil at 7:00 PM. Stadium occupancy is currently 82%. Gates open until 6:30 PM.';
+  }
+  else if (
+    message.toLowerCase().includes('team') ||
+    message.toLowerCase().includes('player')
+  ) {
+    response =
+      'Both teams have arrived at the stadium. Lineups will be announced 1 hour before kickoff.';
+  }
+  else if (
+    message.toLowerCase().includes('transport') ||
+    message.toLowerCase().includes('train') ||
+    message.toLowerCase().includes('bus')
+  ) {
+    response =
+      'The nearest metro station is 500m from Gate A. Extra buses will operate after the match.';
+  }
+  else if (
+    message.toLowerCase().includes('emergency') ||
+    message.toLowerCase().includes('help')
+  ) {
+    response =
+      'For emergencies, contact the nearest volunteer or proceed to the medical center near Section 110.';
+  }
+  else if (
+    message.toLowerCase().includes('crowded') ||
+    message.toLowerCase().includes('reroute') ||
+    message.toLowerCase().includes('alert')
+  ) {
+    response =
+      '⚠️ Crowd Alert: Gate B is currently experiencing high congestion. StadiumMind AI recommends rerouting through Gate D. Estimated delay reduced from 12 minutes to 3 minutes.';
+  }
+  else if (
+    message.toLowerCase().includes('wheelchair') ||
+    message.toLowerCase().includes('accessible') ||
+    message.toLowerCase().includes('disability') ||
+    message.toLowerCase().includes('vision')
+  ) {
+    response =
+      'Accessibility Assistance: The nearest wheelchair-accessible entrance is Gate A. Audio navigation support is available, and volunteers are stationed at all accessibility points.';
+  }
+  else if (
+    message.toLowerCase().includes('ticket') ||
+    message.toLowerCase().includes('seat')
+  ) {
+    response =
+      'Your ticket is valid. Seat A-24 is located in Section 105. Estimated walking time from Gate A: 4 minutes.';
+  }
+  else if (
+    message.toLowerCase().includes('weather') ||
+    message.toLowerCase().includes('rain')
+  ) {
+    response =
+      'Current weather: 28°C, partly cloudy. No delays expected. Carry water and arrive 30 minutes before kickoff.';
+  }
+  else if (
+    message.toLowerCase().includes('spanish') ||
+    message.toLowerCase().includes('hindi') ||
+    message.toLowerCase().includes('french') ||
+    message.toLowerCase().includes('translate')
+  ) {
+    response =
+      'Translation Service: Welcome to StadiumMind AI. ¿Cómo puedo ayudarte hoy? | Comment puis-je vous aider aujourd’hui ? | मैं आपकी सहायता कैसे कर सकता हूँ?';
+  }
+  else {
+    response =
+      'I can help with navigation, crowd alerts, food courts, accessibility services, transport information, match schedules, tickets, and stadium facilities.';
+  }
 
-setMessage('');
-
-setTimeout(() => {
-  setChatMessages(prev => [
-    ...prev.slice(0, -1),
+  setChatMessages([
+    ...chatMessages,
+    userMessage,
     {
       sender: 'ai',
-      text: response
+      text: 'Thinking...'
     }
   ]);
-}, 1000);
+
+  setMessage('');
+
+  setTimeout(() => {
+    setChatMessages(prev => [
+      ...prev.slice(0, -1),
+      {
+        sender: 'ai',
+        text: response
+      }
+    ]);
+  }, 1000);
 };
-const handleRoute = () => {
-  if (!currentLocation || !destination) return;
+const handleRoute = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/navigation");
+    const data = await res.json();
 
-  let time = '4 MINS';
-  let recommendation = 'Use Corridor A. Current crowd density is low.';
-
-  if (destination.toLowerCase().includes('105')) {
-    time = '5 MINS';
-    recommendation = 'Use West Corridor. Low crowd density.';
-  } 
-  else if (destination.toLowerCase().includes('food')) {
-    time = '2 MINS';
-    recommendation = 'Food Plaza A is nearby. Moderate crowd.';
+    setRouteResult({
+      route: data.route,
+      time: data.time,
+      recommendation: data.recommendation
+    });
+  } catch (error) {
+    setRouteResult({
+      route: `${currentLocation} → Gate D → ${destination}`,
+      time: "3 mins",
+      recommendation:
+        "AI Recommendation: Use Gate D to avoid congestion."
+    });
   }
-  else if (destination.toLowerCase().includes('gate b')) {
-    time = '6 MINS';
-    recommendation = 'Use North Walkway. Avoid Gate C congestion.';
-  }
-
-  setRouteResult({
-    route: `${currentLocation} → ${destination}`,
-    time,
-    recommendation
-  });
 };
 const simulateCrowdUpdate = () => {
   const levels = [
@@ -205,66 +260,88 @@ const simulateCrowdUpdate = () => {
           </div>
         </div>
 
-        {/* 2. Smart Navigation Card */}
-        <div className="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
-          <div className="relative z-10 flex flex-col h-full">
-            <h3 className="font-black italic uppercase tracking-wider flex items-center gap-2 text-sm mb-4">
-              <Navigation size={18} /> Smart Navigation
-            </h3>
-            <div className="space-y-3">
-              <div className="space-y-2">
-  <input
-    type="text"
-    placeholder="Current Location"
-    value={currentLocation}
-    onChange={(e) => setCurrentLocation(e.target.value)}
-    className="w-full px-3 py-2 rounded-lg text-black text-xs"
-  />
+        {/* Smart Navigation Card */}
+<div className="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
+  <div className="relative z-10 flex flex-col h-full">
+    <h3 className="font-black italic uppercase tracking-wider flex items-center gap-2 text-sm mb-4">
+      <Navigation size={18} /> Smart Navigation
+    </h3>
 
-  <input
-    type="text"
-    placeholder="Destination"
-    value={destination}
-    onChange={(e) => setDestination(e.target.value)}
-    className="w-full px-3 py-2 rounded-lg text-black text-xs"
+    <div className="space-y-3">
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="Current Location"
+          value={currentLocation}
+          onChange={(e) => setCurrentLocation(e.target.value)}
+          className="w-full px-3 py-2 rounded-lg bg-white text-black placeholder-gray-500 text-sm font-medium"
+        />
+
+        <input
+          type="text"
+          placeholder="Destination"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+          className="w-full px-3 py-2 rounded-lg bg-white text-black placeholder-gray-500 text-sm font-medium"
+        />
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div>
+          <p className="text-[10px] uppercase font-bold text-indigo-200 tracking-widest">
+            Est. Time
+          </p>
+
+          <p className="text-xl font-black italic">
+            {routeResult ? routeResult.time : '6 MINS'}
+          </p>
+        </div>
+
+        <div className="h-8 w-px bg-indigo-500" />
+
+        <div className="flex-1">
+          <p className="text-[10px] uppercase font-bold text-indigo-200 tracking-widest">
+            AI Recommendation
+          </p>
+
+          <p className="text-[11px] font-medium leading-tight">
+            {routeResult
+              ? routeResult.recommendation
+              : 'Use West corridor to avoid halftime rush.'}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {routeResult && (
+      <div className="mt-4 bg-white/10 rounded-xl p-3">
+        <p className="text-xs font-bold">
+          Route: {routeResult.route}
+        </p>
+
+        <p className="text-xs mt-1">
+          Time: {routeResult.time}
+        </p>
+
+        <p className="text-xs mt-1">
+          {routeResult.recommendation}
+        </p>
+      </div>
+    )}
+
+    <button
+      onClick={handleRoute}
+      className="mt-6 bg-white text-indigo-600 w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-50 transition-colors"
+    >
+      Find Route
+    </button>
+  </div>
+
+  <Navigation
+    size={120}
+    className="absolute right-[-30px] bottom-[-30px] text-white/10 rotate-12"
   />
 </div>
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-indigo-200 tracking-widest">Est. Time</p>
-                  <p className="text-xl font-black italic">6 MINS</p>
-                </div>
-                <div className="h-8 w-px bg-indigo-500" />
-                <div className="flex-1">
-                  <p className="text-[10px] uppercase font-bold text-indigo-200 tracking-widest">AI Recommendation</p>
-                  <p className="text-[11px] font-medium leading-tight">Use West corridor to avoid halftone rush.</p>
-                </div>
-              </div>
-            </div>
-            {routeResult && (
-  <div className="mt-4 bg-white/10 rounded-xl p-3">
-    <p className="text-xs font-bold">
-      Route: {routeResult.route}
-    </p>
-
-    <p className="text-xs mt-1">
-      Time: {routeResult.time}
-    </p>
-
-    <p className="text-xs mt-1">
-      {routeResult.recommendation}
-    </p>
-  </div>
-)}
-            <button
-  onClick={handleRoute}
-  className="mt-6 bg-white text-indigo-600 w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-50 transition-colors"
->
-  Find Route
-</button>
-          </div>
-          <Navigation size={120} className="absolute right-[-30px] bottom-[-30px] text-white/10 rotate-12" />
-        </div>
 
         {/* 3. Nearby Stores Card */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
@@ -294,7 +371,7 @@ const simulateCrowdUpdate = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* 4. AI Match Assistant Card */}
-        <div className="bg-slate-950 rounded-3xl p-8 text-white flex flex-col border border-slate-800 relative overflow-hidden">
+        <div className="bg-slate-950 rounded-3xl p-8 text-white flex flex-col border border-slate-800 relative overflow-hidden h-[340px]">
           <div className="flex items-center gap-3 mb-6 relative z-10">
             <div className="bg-indigo-600 p-2 rounded-xl">
               <Sparkles size={20} />
@@ -305,7 +382,7 @@ const simulateCrowdUpdate = () => {
             </div>
           </div>
 
-          <div className="space-y-4 flex-1 relative z-10 overflow-y-auto max-h-96 pr-2">
+          <div className="overflow-y-auto h-[280px] pr-2 space-y-4">
 
   {chatMessages.map((msg, index) => (
     <div
@@ -356,27 +433,72 @@ const simulateCrowdUpdate = () => {
           <Sparkles size={180} className="absolute right-[-40px] top-[-40px] text-white/5" />
         </div>
 
-        {/* 5. Stadium Map Placeholder */}
-        <div className="bg-slate-100 rounded-3xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center p-12 text-center group cursor-pointer hover:border-indigo-400 transition-all">
-          <div className="relative mb-4">
-            <div className="absolute inset-0 bg-indigo-500 blur-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
-            <div className="relative bg-white p-6 rounded-full shadow-lg text-slate-300 group-hover:text-indigo-600 transition-colors">
-              <MapPin size={48} />
-            </div>
-          </div>
-          <h3 className="text-xl font-black italic uppercase text-slate-700 tracking-tighter">
-            Interactive Stadium Map
-          </h3>
-          <p className="text-xs text-slate-500 max-w-xs mt-2 font-medium">
-            Tap to explore seating, real-time gate congestion, and amenities across all 3 levels.
-          </p>
-          <div className="mt-6 flex gap-2">
-            <span className="px-3 py-1 bg-white rounded-full text-[10px] font-bold text-slate-400 shadow-sm">Level 1</span>
-            <span className="px-3 py-1 bg-white rounded-full text-[10px] font-bold text-slate-400 shadow-sm">Level 2</span>
-            <span className="px-3 py-1 bg-white rounded-full text-[10px] font-bold text-slate-400 shadow-sm">Concourse</span>
-          </div>
-        </div>
+        {/* 5. Interactive Stadium Map */}
+<div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-lg">
 
+  <div className="flex items-center justify-between mb-4">
+    <h3 className="text-xl font-black italic uppercase text-slate-800">
+      Interactive Stadium Map
+    </h3>
+
+    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+      LIVE
+    </span>
+  </div>
+
+  <div className="bg-slate-100 rounded-3xl p-5">
+
+    <div className="bg-slate-800 text-white text-center py-3 rounded-xl font-black mb-4">
+      FOOTBALL FIELD
+    </div>
+
+    <div className="grid grid-cols-3 gap-3">
+
+      <div className="bg-green-500 text-white rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+        <p className="font-bold">Gate A</p>
+        <p className="text-xs">Low Crowd</p>
+      </div>
+
+      <div className="bg-yellow-400 text-black rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+        <p className="font-bold">Section 105</p>
+        <p className="text-xs">Your Seat</p>
+      </div>
+
+      <div className="bg-red-500 text-white rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+        <p className="font-bold">Gate B</p>
+        <p className="text-xs">High Crowd</p>
+      </div>
+
+      <div className="bg-blue-500 text-white rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+        <p className="font-bold">Food Court</p>
+        <p className="text-xs">120m Away</p>
+      </div>
+
+      <div className="bg-purple-500 text-white rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+        <p className="font-bold">Medical</p>
+        <p className="text-xs">45m Away</p>
+      </div>
+
+      <div className="bg-green-600 text-white rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+        <p className="font-bold">Gate C</p>
+        <p className="text-xs">Low Crowd</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div className="mt-4 bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
+    <p className="text-sm font-bold text-indigo-700">
+      🤖 AI Insight
+    </p>
+
+    <p className="text-sm text-slate-600 mt-1">
+      Congestion detected near Gate B. Recommended route:
+      Gate A → Section 105. Estimated time saved: 6 minutes.
+    </p>
+  </div>
+
+</div>
       </div>
     </div>
   );
